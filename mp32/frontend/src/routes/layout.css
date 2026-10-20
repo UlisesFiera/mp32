@@ -11,8 +11,11 @@
     --color-brand: #fbfda4;
     --color-greybrand: #1c1c1cea;
     --font-title: "Frijole", sans-serif;
+    --default-border-width: "lg";
+    --color-yellowbrand: #fafc91;
 }
 
 [data-theme='reign'] {
 	--color-root-bg-dark: #101010;
 }
+
