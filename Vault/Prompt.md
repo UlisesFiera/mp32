@@ -1,0 +1,15 @@
+I want to build an IoT device, and I want you to spit out the different parts and components, conceptually, of it so I can develop it.
+First of all, tell me how can I help you on helping me with this project. Should I write some directions in a file so you stick to them? Or any other thing? Only if necessary.
+The scope is a school project, so it's just a prototype and I'm happy with it just working on basic premises and hardware. 
+It's a "digital CD". The goal is to create a device with the shape of a conventional old school disk that links to a bluetooth appliance nearby. It should have basic functionality only: turning on/off, usb charging, pairing/unpairing, and remembering devices. It stores a music album, and sends the music to the device so the device can play it: the car's bluetooth player, a home-media, airpods, etc. 
+We should then figure out how to match the digital interfaces expected by these devices. I mean: how does, for example, my airpads send the signal to advance to the next song? That kind of basic media-player functionality, which I don't know if its the player device responsibility, or my device's. I don't know if this imply we must provide an interface for playing the music itself so the devices can have access to it. I need to understand how all of that works. For the sake of prototyping, we will start by making it be able to send the music to airpods.
+On the other hand, the disk has kind of a "b-side". This second side, playable by pressing a second play button, is a compilation of songs the user can update at any time. We will need a full-stack app accessible from the web for this.
+The b-side starts with a selection of the songs from the artist catalog that they put there beforehand. The user can modify it entirely and make their own. 
+The app asks for authentication. Two kind of users can connect: company or regular.
+The app loads. It lists the bluetooth devices paired and/or usb connected. Checks if the chosen one is a valid digital music disk. If so, loads the metadata stored in the album: artwork, band, album, a playlist, b playlist. If it's the first time loading this disk, "added to your library". This is the "connected disk" tab. 
+On the other hand, the app loads the user's library. Every time a user links a new disk, it's stored in this library with the information previously mentioned. Thats the "library" tab.
+There's the "b-side creator" tab where the user can upload their local music, create a playlist and upload it to the connected file. This tab only shows up if there's a connected disk.
+There's the "find" tab. The user can look up another user's tagname and see their library.
+Finally, there's the "share" tab. If there's a disk connected, the user can send the b-side's playlist (the files and all) over the internet to another user that also has a disk connected. The A user has to mark themselves as "sender" and the B user as "receiver".
+The frontend must be written in sveltekit and the backend in go. For the IoT device, we will use an esp32 written in whatever language, C or C++ or whatever.
+
