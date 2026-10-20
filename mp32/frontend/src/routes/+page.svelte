@@ -3,28 +3,28 @@
 </script>
 
 <div class="min-h-screen flex items-center justify-center">
-    <div class="flex flex-col w-fit items-center justify-center gap-8 border p-5 rounded-lg border-brand">
+    <div class="z-1 flex flex-col w-fit items-center justify-center gap-4 p-7 rounded-lg bg-surface-500">
         <form class="w-64 space-y-4">
-            <fieldset class="space-y-2">
+            <fieldset class="space-y-2 text-surface-100">
                 <legend>Login</legend>
 
-                <label class="flex flex-col gap-2 text-xs">
+                <label class="flex flex-col text-xs">
                     <span>User</span>
-                    <input class="input" type="email" />
+                    <input class="input text-xs" type="email" />
                 </label>
 
-                <label class="flex flex-col gap-2 text-xs">
+                <label class="flex flex-col text-xs">
                     <span>Password</span>
-                    <input class="input" type="password" />
+                    <input class="input text-xs" type="password" />
                 </label>
             </fieldset>
         </form>
 
         <div class="flex items-center gap-4">
-            <button type="button" class="btn preset-filled">
+            <button type="button" class="btn preset-filled text-xs bg-surface-800 text-surface-100">
                 <span>log-in</span>
             </button>
-            <button type="button" class="btn preset-filled">
+            <button type="button" class="btn preset-filled text-xs bg-surface-800 text-surface-100">
                 <span>sign-up</span>
                 <ArrowUpRight size={16} />
             </button>
