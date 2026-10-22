@@ -12,4 +12,4 @@
     } = $props();
 </script>
 
-<input class="input text-xs rounded-xl bg-surface-500" id={id} type={type} autocomplete={autocomplete}>
+<input class="input text-xs rounded-xl bg-surface-500 ring-0" id={id} type={type} autocomplete={autocomplete}>

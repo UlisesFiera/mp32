@@ -13,6 +13,8 @@ mac-install:
 	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npx sv add tailwindcss && npm install -D @tailwindcss/forms && npm install lucide-svelte@0.577.0 && npx sv@1.1.1 add tailwindcss="plugins:none" --no-install
 	@echo "Installing skeleton..."
 	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npm i -D @skeletonlabs/skeleton @skeletonlabs/skeleton-svelte
+	@echo "Installing animation libs..."
+	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npx shadcn@latest add https://sveltebits.xyz/r/dot-field.json
 
 	@echo "## BACK-END DEPENDENCIES ##"
 	@echo "Installing go..."

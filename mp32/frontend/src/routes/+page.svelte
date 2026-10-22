@@ -18,7 +18,7 @@
 
                 <label class="gap-1 flex flex-col text-xs" for="password">
                     <span>Password</span>
-                    <input class="input text-xs rounded-xl bg-surface-500" id="password" type="password"/>
+                    <Input id="password" type="password" autocomplete="current-password"/>
                 </label>
             </fieldset>
         </form>
@@ -27,7 +27,7 @@
             <Button>
                 <span>log-in</span>
             </Button>
-            <Button>
+            <Button href="/signup" target="_blank">
                 <span>sign-up</span>
                 <ArrowUpRight size={16} />
             </Button>

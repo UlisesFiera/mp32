@@ -15,3 +15,5 @@
     - https://tailwindcss.com/docs/installation/using-vite
 - Beautiful charts library:
     - https://www.chartjs.org/
+- Svelte animations
+    - https://sveltebits.xyz/
