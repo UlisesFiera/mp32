@@ -1,33 +1,36 @@
 <script lang="ts">
     import { ArrowUpRight } from 'lucide-svelte';
+    import Panel from '#lib/components/Panel.svelte';
+    import Button from '#lib/components/Button.svelte';
+    import Input from '#lib/components/Input.svelte';
 </script>
 
 <div class="min-h-screen flex items-center justify-center">
-    <div class="z-10 flex flex-col w-fit items-center justify-center gap-4 p-7 rounded-xl bg-gradient-to-t from-neutral-900 to-neutral-800">
+    <Panel>
         <form class="w-64 space-y-4">
             <fieldset class="space-y-2 text-surface-100">
                 <legend>Login</legend>
 
-                <label class="gap-1 flex flex-col text-xs">
+                <label class="gap-1 flex flex-col text-xs" for="user">
                     <span>User</span>
-                    <input class="input text-xs rounded-xl bg-surface-500 focus:border-yellowbrand-400/50" type="user"/>
+                    <Input id="user" type="text" autocomplete="username"/>
                 </label>
 
-                <label class="gap-1 flex flex-col text-xs">
+                <label class="gap-1 flex flex-col text-xs" for="password">
                     <span>Password</span>
-                    <input class="input text-xs rounded-xl bg-surface-500" type="password"/>
+                    <input class="input text-xs rounded-xl bg-surface-500" id="password" type="password"/>
                 </label>
             </fieldset>
         </form>
 
         <div class="flex items-center gap-4">
-            <button type="button" class="btn preset-filled text-xs bg-surface-500 text-surface-100 rounded-xl hover:text-black hover:bg-yellowbrand">
+            <Button>
                 <span>log-in</span>
-            </button>
-            <button type="button" class="btn preset-filled text-xs bg-surface-500 text-surface-100 rounded-xl hover:text-black hover:bg-yellowbrand">
+            </Button>
+            <Button>
                 <span>sign-up</span>
                 <ArrowUpRight size={16} />
-            </button>
+            </Button>
         </div>
-    </div>
+    </Panel>
 </div>

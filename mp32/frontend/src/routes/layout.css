@@ -19,3 +19,6 @@
 	--color-root-bg-dark: #101010;
 }
 
+.input:focus {
+    --tw-ring-color: color-mix(in srgb, var(--color-yellowbrand) 20%, transparent);
+}
