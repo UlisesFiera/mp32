@@ -14,7 +14,7 @@ mac-install:
 	@echo "Installing skeleton..."
 	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npm i -D @skeletonlabs/skeleton @skeletonlabs/skeleton-svelte
 	@echo "Installing animation libs..."
-	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npx shadcn@latest add https://sveltebits.xyz/r/dot-field.json
+	@. "$$HOME/.nvm/nvm.sh" && cd mp32/frontend && npx shadcn@latest add https://sveltebits.xyz/r/dot-field.json && npx shadcn@latest add https://sveltebits.xyz/r/magic-rings.json
 
 	@echo "## BACK-END DEPENDENCIES ##"
 	@echo "Installing go..."
