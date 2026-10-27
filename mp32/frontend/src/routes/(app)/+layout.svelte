@@ -1,5 +1,7 @@
 <script lang="ts">
     import { page } from '$app/state';
+    import { fade } from 'svelte/transition';
+    import Button from '#lib/components/Button.svelte';
     import type { LayoutProps } from './$types';
 
     let { children }: LayoutProps = $props();
@@ -12,37 +14,57 @@
         { label: 'Explore', href: '/explore' },
         { label: 'Mix', href: '/mix' }
     ];
+
+    const navButtonClass = 'group w-full h-7 justify-start gap-3 bg-transparent p-0';
+    const iconClass = 'grid size-7 shrink-0 place-items-center rounded-xs bg-white/20 text-xs transition-colors group-hover:bg-yellowbrand group-hover:text-black';
 </script>
 
 <div class="flex min-h-screen bg-neutral-950 text-surface-100">
-    <aside class={`flex shrink-0 flex-col border-r border-white/10 bg-neutral-900/80 p-3 transition-[width] duration-200 ${collapsed ? 'w-16' : 'w-64'}`}>
-        <div class="mb-6 flex items-center justify-between gap-2 px-2 py-2">
-            {#if !collapsed}<span class="font-title text-sm">mp32</span>{/if}
-            <button
-                type="button"
-                class="grid size-8 place-items-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
-                onclick={() => collapsed = !collapsed}
-                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                aria-expanded={!collapsed}
-            >
-                {collapsed ? '›' : '‹'}
-            </button>
-        </div>
-
-        <nav class="flex flex-col gap-1" aria-label="Main navigation">
+    <aside class={`relative flex shrink-0 flex-col justify-between px-5 pb-5 pt-8 transition-[width]
+        md:pt-10
+        duration-500 ease-in-out motion-reduce:transition-none
+        after:pointer-events-none after:absolute after:right-0
+        after:top-4 after:bottom-4 after:w-px after:bg-white/10
+        ${collapsed ? 'w-19' : 'w-50'}`}>
+        <nav class="flex flex-col gap-2" aria-label="Main navigation">
             {#each links as link}
-                <a
+                <Button
                     href={link.href}
+                    hover={false}
                     aria-label={link.label}
                     title={collapsed ? link.label : undefined}
                     aria-current={page.url.pathname === link.href ? 'page' : undefined}
-                    class={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${page.url.pathname === link.href ? 'bg-white/10 text-white' : 'text-white/65 hover:bg-white/5 hover:text-white'}`}
+                    class={navButtonClass}
                 >
-                    <span class="grid size-7 shrink-0 place-items-center rounded-lg bg-white/5 text-xs font-semibold">{link.label.slice(0, 1)}</span>
-                    {#if !collapsed}<span>{link.label}</span>{/if}
-                </a>
+                    <span class={`${iconClass} ${page.url.pathname === link.href ? 'bg-yellowbrand text-black' : ''}`}>
+                        {link.label.slice(0, 1)}
+                    </span>
+                    <span
+                        aria-hidden={collapsed}
+                        class={`overflow-hidden whitespace-nowrap
+                            transition-[max-width,opacity] duration-400 ease-in-out motion-reduce:transition-none
+                            ${collapsed ? 'max-w-0 opacity-0' : 'max-w-32 opacity-100'}`}
+                    >{link.label}</span>
+                </Button>
             {/each}
         </nav>
+
+        <div class="relative flex h-7 items-center">
+            {#if !collapsed}
+                <span class="text-sm" in:fade={{ duration: 250, delay: 500 }} out:fade={{ duration: 250 }}>
+                    mp32
+                </span>
+            {/if}
+            <Button
+                hover={false}
+                class={`group absolute top-0 size-7 justify-center rounded-xs bg-transparent p-0 text-xs leading-none transition-[left] duration-400 ease-in-out motion-reduce:transition-none
+                    ${collapsed ? 'left-0' : 'left-[calc(100%-1.75rem)]'}`}
+                onclick={() => collapsed = !collapsed}
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-expanded={!collapsed}>
+                <span class={iconClass}>{collapsed ? '›' : '‹'}</span>
+            </Button>
+        </div>
     </aside>
 
     <main class="min-w-0 flex-1 p-6 md:p-10">

@@ -35,7 +35,7 @@
                 <Button>
                     <span>create account</span>
                 </Button>
-                <Button href="/">
+                <Button href="/login">
                     <span>back to log-in</span>
                 </Button>
             </div>
