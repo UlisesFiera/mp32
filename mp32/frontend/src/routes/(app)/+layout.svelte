@@ -12,7 +12,9 @@
         { label: 'Collection', href: '/collection' },
         { label: 'Pair', href: '/pair' },
         { label: 'Explore', href: '/explore' },
-        { label: 'Mix', href: '/mix' }
+        { label: 'Mix', href: '/mix' },
+        { label: 'Profile', href: '/profile', divBefore: true},
+        { label: 'log-out', href: '/login'}
     ];
 
     const navButtonClass = 'group w-full h-7 justify-start gap-3 bg-transparent p-0';
@@ -31,9 +33,12 @@
         after:top-4 after:bottom-4 after:w-px after:bg-white/10
         ${collapsed ? 'w-20' : 'w-50'}`}>
         <nav class="flex flex-col gap-2" aria-label="Main navigation">
-            {#each links as link}
 
-                <!-- buttons -->
+            <!-- buttons -->
+            {#each links as link}
+                {#if link.divBefore}
+                    <div aria-hidden="true" class="my-2 h-px w-full bg-white/10"></div>
+                {/if}
                 <Button
                     href={link.href}
                     hover={false}

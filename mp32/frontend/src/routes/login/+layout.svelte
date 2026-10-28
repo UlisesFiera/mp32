@@ -23,6 +23,7 @@
             glowColor="#14110e"
         />
     </div>
+    <!-- 
     <div class="absolute inset-0 z-0">
         <Rings
             color="#fbfda4"
@@ -48,6 +49,7 @@
             clickBurst={false}
         />
     </div>
+    -->
     <div class="absolute inset-0 z-10 bg-gradient-to-t from-black to-black/10"></div>
     <div class="relative z-10">
         {@render children()}
