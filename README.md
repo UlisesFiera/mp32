@@ -5,15 +5,21 @@
 
 # Resources
 
-- Svelte documentation:
+- Libraries and framework documentation:
+    - https://svelte.dev/docs
+    - https://tailwindcss.com/docs
+    - https://www.skeleton.dev/docs/svelte/tailwind-components
+
+- Project set-up:
     - https://svelte.dev/docs/kit/creating-a-project
-- Figma, for UX/UI prototyping
-- magnific.com, for front-end assets
-- Skeleton, UI components:
-    - www.skeleton.dev
-- Tailwind docs:
     - https://tailwindcss.com/docs/installation/using-vite
-- Beautiful charts library:
+
+- Assets and animations:
+    - https://www.magnific.com
     - https://www.chartjs.org/
-- Svelte animations
     - https://sveltebits.xyz/
+    - https://fonts.google.com/
+    - https://animation-svelte.vercel.app/
+
+- Inspiration:
+    - https://dribbble.com/shots/27229691-UI-UX-Design-for-Logistics-Dashboard-Haulix
