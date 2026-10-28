@@ -24,7 +24,7 @@
         </form>
 
         <div class="flex items-center gap-4">
-            <Button>
+            <Button href="/home">
                 <span>log-in</span>
             </Button>
             <Button href="/signup" target="_blank">
