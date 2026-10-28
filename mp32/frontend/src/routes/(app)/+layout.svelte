@@ -1,7 +1,6 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
-    import Button from '#lib/components/Button.svelte';
     import type { LayoutProps } from './$types';
 
     let { children }: LayoutProps = $props();
@@ -26,8 +25,9 @@
 <div class="flex min-h-screen bg-neutral-950 text-surface-100">
 
     <!-- sidebar -->
-    <aside class={`relative flex shrink-0 flex-col justify-between px-5 pb-5 pt-8 transition-[width]
-        md:pt-10
+    <aside class={`
+        relative flex shrink-0 flex-col justify-between 
+        px-5 pb-5 pt-8 transition-[width] md:pt-10
         duration-500 ease-in-out motion-reduce:transition-none
         after:pointer-events-none after:absolute after:right-0
         after:top-4 after:bottom-4 after:w-px after:bg-white/10
@@ -39,13 +39,13 @@
                 {#if link.divBefore}
                     <div aria-hidden="true" class="my-2 h-px w-full bg-white/10"></div>
                 {/if}
-                <Button
+                <a
                     href={link.href}
-                    hover={false}
                     aria-label={link.label}
-                    title={collapsed ? link.label : undefined}
                     aria-current={page.url.pathname === link.href ? 'page' : undefined}
-                    class={navButtonClass}>
+                    title={collapsed ? link.label : undefined}
+                    class={`btn btn-md text-xs text-surface-100 rounded-xl 
+                        hover:bg-transparent hover:text-current ${navButtonClass}`}>
 
                     <!-- icon badge -->
                     <span class={`${iconClass} ${page.url.pathname === link.href 
@@ -64,7 +64,7 @@
                             ${page.url.pathname === link.href ? 'text-yellowbrand' : ''}`}>
                         {link.label}
                     </span>
-                </Button>
+                </a>
             {/each}
         </nav>
 
@@ -78,17 +78,17 @@
             {/if}
 
             <!-- collapse button -->
-            <Button
-                hover={false}
-                class={`group absolute top-0 size-7 justify-center rounded-xs 
-                    bg-transparent p-0 text-xs leading-none transition-[left] 
-                    duration-400 ease-in-out motion-reduce:transition-none
+            <button
+                type="button"
+                class={`btn btn-md
+                    hover:bg-transparent hover:text-current group absolute size-7 
+                    rounded-xs duration-400 ease-in-out motion-reduce:transition-none
                     ${collapsed ? 'left-0' : 'left-[calc(100%-1.75rem)]'}`}
                 onclick={() => collapsed = !collapsed}
                 aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 aria-expanded={!collapsed}>
                 <span class={iconClass}>{collapsed ? '›' : '‹'}</span>
-            </Button>
+            </button>
         </div>
     </aside>
 

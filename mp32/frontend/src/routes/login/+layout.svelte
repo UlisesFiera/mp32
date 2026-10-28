@@ -6,15 +6,17 @@
     let { children }: LayoutProps = $props();
 </script>
 
-<div class="relative min-h-screen overflow-hidden">
+<div class="relative min-h-screen overflow-hidden ">
+    <div class="absolute inset-0 z-10 bg-black/60"></div>
+    <div class="absolute inset-0 z-10 bg-gradient-to-t from-black to-black/10"></div>
     <div class="absolute inset-0 z-0">
         <DotField
-            dotRadius={0.7}
+            dotRadius={1.7}
             dotSpacing={10}
             cursorRadius={10}
-            cursorForce={1}
-            bulgeOnly={false}
-            bulgeStrength={0}
+            cursorForce={100}
+            bulgeOnly={true}
+            bulgeStrength={100}
             glowRadius={10}
             sparkle={false}
             waveAmplitude={0}
@@ -23,7 +25,8 @@
             glowColor="#14110e"
         />
     </div>
-    <!-- 
+
+    <!--- 
     <div class="absolute inset-0 z-0">
         <Rings
             color="#fbfda4"
@@ -49,8 +52,7 @@
             clickBurst={false}
         />
     </div>
-    -->
-    <div class="absolute inset-0 z-10 bg-gradient-to-t from-black to-black/10"></div>
+    --->
     <div class="relative z-10">
         {@render children()}
     </div>
