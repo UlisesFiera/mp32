@@ -33,9 +33,10 @@ runfapi:
 	@cd mp32/backend/fastapi && uvicorn main:app --reload --port 8000
 
 runb:
+	@cd mp32/backend && go get github.com/go-chi/chi/v5
 	@echo "Running backend..."
-	@docker compose up -d
-	@cd mp32/backend && go run .
+#	@docker compose up -d
+	@cd mp32/backend && go run cmd/*.go
 
 fclean:
 	@docker compose down
