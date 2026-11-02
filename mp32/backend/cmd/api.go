@@ -26,6 +26,7 @@ func (app *app) mount() http.Handler {
     router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Timeout(60 * time.Second))
     router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
