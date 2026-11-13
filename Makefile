@@ -24,19 +24,24 @@ mac-install:
 	@echo "Installing fast-api..."
 	@cd mp32/backend/fastapi && pip install -r requirements.txt
 
+run:
+	@echo "Running frontend and backend..."
+	docker compose up -d --build
+
 runf:
 	@echo "Running frontend..."
-	@cd mp32/frontend && npm run dev -- --host 0.0.0.0
+#	@cd mp32/frontend && npm run dev -- --host 0.0.0.0
+	docker compose up -d --build frontend
 
 runfapi:
 	@echo "Running fast-api..."
 	@cd mp32/backend/fastapi && uvicorn main:app --reload --port 8000
 
 runb:
-	@cd mp32/backend && go get github.com/go-chi/chi/v5
+#	@cd mp32/backend && go get github.com/go-chi/chi/v5
 	@echo "Running backend..."
-#	@docker compose up -d
-	@cd mp32/backend && go run cmd/*.go
+	@docker compose up -d --build backend
+#	@cd mp32/backend && go run cmd/*.go
 
 fclean:
 	@docker compose down
