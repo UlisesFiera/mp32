@@ -1,4 +1,4 @@
-name: trascendence
+name: ft_trascendence
 services:
   frontend:
     build:
