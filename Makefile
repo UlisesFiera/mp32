@@ -25,12 +25,11 @@ mac-install:
 	@cd mp32/backend/fastapi && pip install -r requirements.txt
 
 run:
-	@echo "Running frontend and backend..."
+	@echo "Running Frontend, Backend and PostgresSQL..."
 	docker compose up -d --build
 
 runf:
 	@echo "Running frontend..."
-#	@cd mp32/frontend && npm run dev -- --host 0.0.0.0
 	docker compose up -d --build frontend
 
 runfapi:
@@ -38,10 +37,12 @@ runfapi:
 	@cd mp32/backend/fastapi && uvicorn main:app --reload --port 8000
 
 runb:
-#	@cd mp32/backend && go get github.com/go-chi/chi/v5
 	@echo "Running backend..."
 	@docker compose up -d --build backend
-#	@cd mp32/backend && go run cmd/*.go
+
+logs:
+	@echo "Frontend, Backend and PostgresSQL logs..."
+	docker compose logs
 
 fclean:
 	@docker compose down
