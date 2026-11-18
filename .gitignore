@@ -161,6 +161,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+!.env.example
+
+# Local database backups
+*.dump
+*.sql.gz
 
 # Spyder project settings
 .spyderproject
