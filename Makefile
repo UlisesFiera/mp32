@@ -4,6 +4,12 @@ run:
 	@echo "Running Frontend, Backend and PostgresSQL..."
 	docker compose up -d --build
 
+dev-fw:
+	docker build -t mp32-esp-idf -f mp32/firmware/Dockerfile mp32/firmware
+	docker run --rm -it \
+		-v "$$PWD/mp32/firmware:/project" \
+		mp32-esp-idf
+
 runf:
 	@echo "Running frontend..."
 	docker compose up -d --build frontend
