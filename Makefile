@@ -24,8 +24,8 @@ mac-install:
 	@echo "Installing fast-api..."
 	@cd mp32/backend/fastapi && pip install -r requirements.txt
 
-run:
-	@echo "Running Frontend, Backend and PostgresSQL..."
+run: migrate
+	@echo "Running Frontend and Backend..."
 	docker compose up -d --build
 
 runf:
@@ -40,8 +40,14 @@ runb:
 	@echo "Running backend..."
 	@docker compose up -d --build backend
 
+migrate:
+	@echo "Starting PostgreSQL..."
+	docker compose up -d --wait postgres
+	@echo "Applying database migrations..."
+	docker compose exec -T postgres sh /migrations/migration.sh
+
 logs:
-	@echo "Frontend, Backend and PostgresSQL logs..."
+	@echo "Frontend, Backend and PostgreSQL logs..."
 	docker compose logs
 
 fclean:
