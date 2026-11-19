@@ -1,6 +1,7 @@
 ## General
 .DS_Store
-.vscodef
+.vscode
+mp32/frontend/.vscode
 
 ## Python
 # Byte-compiled / optimized / DLL files
@@ -161,6 +162,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+!.env.example
+
+# Local database backups
+*.dump
+*.sql.gz
 
 # Spyder project settings
 .spyderproject
