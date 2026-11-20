@@ -1,7 +1,8 @@
 ## General
 .DS_Store
-.vscode
+.vscode/
 mp32/frontend/.vscode
+.venv/
 
 ## Python
 # Byte-compiled / optimized / DLL files

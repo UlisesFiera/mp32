@@ -2,4 +2,4 @@ FROM        espressif/idf:v5.3
 
 WORKDIR     /project
 
-CMD         ["idf.py", "build"]
+CMD         ["bash", "-lc", "idf.py build && idf.py flash && idf.py monitor"]
