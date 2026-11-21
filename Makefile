@@ -15,12 +15,20 @@ else
 endif
 
 FW_IMAGE      := mp32-esp-idf
+FW_CONTAINER  := mp32-dev-fw
 FW_DOCKERFILE := mp32/firmware/Dockerfile
 FW_CONTEXT    := mp32/firmware
 BRIDGE_PY     := mp32/firmware/bridge/bridge.py
 
 # URL que el contenedor usará para hablar con el RFC 2217 del host
 ESPPORT_URL   := rfc2217://host.docker.internal:2217?ign_set_control
+
+FW_DOCKER_RUN := docker run --rm -it \
+	--name $(FW_CONTAINER) \
+	-v "$$PWD/$(FW_CONTEXT):/project" \
+	-e "ESPPORT=$(ESPPORT_URL)" \
+	--add-host=host.docker.internal:host-gateway \
+	$(FW_IMAGE)
 
 # ─── Phony ────────────────────────────────────────────────────────────────────
 .PHONY: all run dev-fw build-fw-image \
@@ -39,11 +47,18 @@ build-fw-image:
 	@docker build -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
 
 dev-fw: $(VENV_STAMP) build-fw-image
-	$(VENV_PY) $(BRIDGE_PY) docker run --rm -it \
-         -v "$$PWD/$(FW_CONTEXT):/project" \
-		-e "ESPPORT=$(ESPPORT_URL)" \
-		--add-host=host.docker.internal:host-gateway \
-         $(FW_IMAGE)
+	@set -eu; \
+	container_ids=$$(docker ps -aq --filter "ancestor=$(FW_IMAGE)"); \
+	if [ -n "$$container_ids" ]; then \
+		echo "Removing previous firmware containers..."; \
+		docker rm -f $$container_ids; \
+	fi
+	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) idf.py build
+	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
+		bash -lc 'cd /project/build && python -m esptool --chip esp32 -p "$(ESPPORT_URL)" -b 460800 \
+		--before default_reset --after hard_reset write_flash @flash_args'
+	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
+		idf.py -p "$(ESPPORT_URL)" monitor
 
 runf:
 	@echo "Running frontend..."
