@@ -3,6 +3,7 @@
 .vscode/
 mp32/frontend/.vscode
 .venv/
+NOTES.md
 
 ## Python
 # Byte-compiled / optimized / DLL files

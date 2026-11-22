@@ -25,14 +25,14 @@ import time
 from pathlib import Path
 from typing import NoReturn, TextIO
 
-# --- Constantes -------------------------------------------------------------
+# Constants
 
 FTDI_VID           = 0x0403
 RFC2217_PORT       = 2217
 CONNECT_TIMEOUT_S  = 10.0
 CONNECT_POLL_S     = 0.1
 
-# --- Utilidades -------------------------------------------------------------
+# Utils
 
 def _bridge_prefix(stream: TextIO) -> str:
     if stream.isatty() and "NO_COLOR" not in os.environ:
@@ -56,12 +56,13 @@ def prefer_callout(device: str) -> str:
     return device
 
 def find_serial_port() -> str:
-    """Devuelve la ruta del puerto serie del ESP32 (FTDI VID 0x0403)."""
+    """
+    Returns the ESP32's port serial route
+    """
     override = os.environ.get("MP32_PORT")
     if override:
         log(f"Using MP32_PORT={override}")
         return prefer_callout(override)
-
     try:
         from serial.tools import list_ports
     except ImportError:
@@ -142,19 +143,17 @@ def wait_for_server(
         ready.wait(min(CONNECT_POLL_S, deadline - time.monotonic()))
     die(f"RFC 2217 server did not open the port within {timeout:.0f}s")
 
-# --- Orquestador ------------------------------------------------------------
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
         return 2
-
     command = argv[1:]
 
-    # ① Detectar el ESP32
+    # ① Detect ESP32
     serial_port = find_serial_port()
 
-    # ② Verificar que el puerto 2217 esté libre
+    # ② Check if the 2217 port is free
     ensure_port_free("0.0.0.0", RFC2217_PORT)
 
     # ③ Localizar el servidor RFC 2217
