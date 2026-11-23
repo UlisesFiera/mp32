@@ -92,9 +92,9 @@ def find_serial_port() -> str:
             log(f"  - {port.device} ({port.description})")
         die("Can only have 1 FTDI device connected at a time")
     port = candidates[0]
-    final_port = set_out_conn_path(port.device)
-    log(f"ESP32 DEVICE DETECTED: {final_port.device} ({final_port.description})")
-    return port.device
+    serial = set_out_conn_path(port.device)
+    log(f"ESP32 DEVICE DETECTED: {serial} ({port.description})")
+    return serial
 
 
 def find_rfc_server_file() -> list[str]:
