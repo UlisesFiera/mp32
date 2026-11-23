@@ -42,13 +42,18 @@ build-fw-image:
 	@docker build -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
 
 dev-fw: $(VENV_STAMP)
-	$(MAKE) clean-fw-containers
-	$(MAKE) build-fw-image
-	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) idf.py build
-	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
+	@echo "[Make: 1/5] Cleaning firmware containers..."
+	@$(MAKE) --no-print-directory clean-fw-containers
+	@echo "[Make: 2/5] Building firmware Docker image..."
+	@$(MAKE) --no-print-directory build-fw-image
+	@echo "[Make: 3/5] Testing connection..."
+	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) idf.py build
+	@echo "[Make: 4/5] Flashing firmware..."
+	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
 		bash -lc 'cd /project/build && python -m esptool --chip esp32 -p "$(ESPPORT_URL)" -b 460800 \
 		--before default_reset --after hard_reset write_flash @flash_args'
-	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
+	@echo "[Make: 5/5] Starting firmware monitor..."
+	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
 		idf.py -p "$(ESPPORT_URL)" monitor
 
 clean-fw-containers:
