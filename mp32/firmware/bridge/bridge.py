@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-bridge.py — Puente serie host ↔ contenedor para `make flash`.
-
-Uso:
-    python bridge.py <comando...>
-
-Ejemplo:
-    python bridge.py docker compose -f docker-compose.yml \
-        -f docker-compose.flash.yml --profile flash run --rm esp-dev idf.py flash
-"""
 
 from __future__ import annotations
 
