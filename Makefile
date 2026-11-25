@@ -37,7 +37,7 @@ run: migrate
 	@echo "Running Frontend and Backend..."
 	docker compose up -d --build
 
-dev-fw: $(VENV_STAMP)
+fw: $(VENV_STAMP)
 	@echo "[Make] Cleaning firmware containers..."
 	@$(MAKE) --no-print-directory clean-fw-containers
 	@echo "[Make] Building firmware Docker image..."
@@ -51,7 +51,7 @@ dev-fw: $(VENV_STAMP)
         echo "Starting firmware monitor..." && cd /project && \
         idf.py -p "$(ESPPORT_URL)" monitor'
 
-dev-fw-shell: $(VENV_STAMP)
+fw-shell: $(VENV_STAMP)
 	$(MAKE) clean-fw-containers
 	$(MAKE) build-fw-image
 	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) bash
