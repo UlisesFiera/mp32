@@ -11,3 +11,10 @@
 5. nimble/nimble_port_freertos.h — ESP-IDF NimBLE FreeRTOS Integration
 
 6. nvs_flash.h — ESP-IDF NVS Flash API
+
+**Bluetooth types:**    
+    BLE GATT: Supports bidirectional data exchange with both iOS and macOS through native APIs. No MFi certification required.
+
+    Bluetooth Classic SPP: Useful for serial data communication with compatible computers, but not generally accessible to third-party iOS applications.
+
+    Bluetooth Classic A2DP: Audio streaming, not general-purpose data exchange.
