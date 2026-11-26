@@ -65,7 +65,7 @@ migrate:
 
 # ─── Logs (sin cambios) ───────────────────────────────────────────────────────
 logs:
-	@echo "Frontend, Backend and PostgreSQL logs..."
+	@echo "Frontend, Backend, PostgreSQL and Nginx logs..."
 	docker compose logs
 
 # ─── Ciclo de vida del venv ───────────────────────────────────────────────────
@@ -82,5 +82,5 @@ clean-venv:
 
 # ─── Clean ────────────────────────────────────────────────────────────────────
 fclean:
-	@docker compose down -v
+	@docker compose down
 	@rm -rf $(VENV)

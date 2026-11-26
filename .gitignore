@@ -228,3 +228,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# NGINX - TLS certificates and private keys
+mp32/nginx/certs/
+*.key
+*.crt
+*.pem
+*.csr
+*.p12
+*.pfx
