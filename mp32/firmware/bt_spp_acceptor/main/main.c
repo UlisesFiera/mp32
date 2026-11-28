@@ -23,7 +23,7 @@
 #include "time.h"
 #include "sys/time.h"
 
-#define SPP_TAG "SPP_ACCEPTOR_DEMO"
+#define SPP_TAG "ESP32_BT_ACCEPTOR"
 #define SPP_SERVER_NAME "SPP_SERVER"
 #define SPP_SHOW_DATA 0
 #define SPP_SHOW_SPEED 1
