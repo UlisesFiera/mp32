@@ -18,16 +18,17 @@
     - https://tailwindcss.com/docs
     - https://www.skeleton.dev/docs/svelte/tailwind-components
 
-- Project set-up:
-    - https://svelte.dev/docs/kit/creating-a-project
-    - https://tailwindcss.com/docs/installation/using-vite
-
 - Assets and animations:
     - https://www.magnific.com
     - https://www.chartjs.org/
     - https://sveltebits.xyz/
     - https://fonts.google.com/
     - https://animation-svelte.vercel.app/
+    
+- Project set-up:
+    - https://svelte.dev/docs/kit/creating-a-project
+    - https://tailwindcss.com/docs/installation/using-vite
+
 
 - Inspiration:
     - https://dribbble.com/shots/27229691-UI-UX-Design-for-Logistics-Dashboard-Haulix

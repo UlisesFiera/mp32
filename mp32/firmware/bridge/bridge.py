@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-bridge.py — Puente serie host ↔ contenedor para `make flash`.
-
-Uso:
-    python bridge.py <comando...>
-
-Ejemplo:
-    python bridge.py docker compose -f docker-compose.yml \
-        -f docker-compose.flash.yml --profile flash run --rm esp-dev idf.py flash
-"""
 
 from __future__ import annotations
 
@@ -20,181 +10,180 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
-from typing import NoReturn
+from typing import NoReturn, TextIO
 
-# --- Constantes -------------------------------------------------------------
-
+# Constants
+#
+# This is the ESP32 VID (manufacturer's serial number)
 FTDI_VID           = 0x0403
+
 RFC2217_PORT       = 2217
 CONNECT_TIMEOUT_S  = 10.0
 CONNECT_POLL_S     = 0.1
 
-# --- Utilidades -------------------------------------------------------------
+# Utils
+
+def _bridge_prefix(stream: TextIO) -> str:
+    if stream.isatty() and "NO_COLOR" not in os.environ:
+        return "\033[33m[bridge]\033[0m"
+    return "[bridge]"
+
 
 def log(msg: str) -> None:
-    print(f"[bridge] {msg}", flush=True)
+    print(f"{_bridge_prefix(sys.stdout)} {msg}", flush=True)
+
 
 def die(msg: str, code: int = 1) -> NoReturn:
-    print(f"[bridge] ERROR: {msg}", file=sys.stderr, flush=True)
+    print(f"{_bridge_prefix(sys.stderr)} ERROR: {msg}", file=sys.stderr, flush=True)
     sys.exit(code)
 
-def prefer_callout(device: str) -> str:
-    """En macOS, /dev/tty.* bloquea hasta DCD. Preferimos /dev/cu.*."""
+
+def set_out_conn_path(device: str) -> str:
+    """
+    macOS (Darwin) exposes two device files for many serial ports:
+        /dev/tty.*: Traditionally intended for incoming connections.
+        /dev/cu.*: Traditionally intended for outgoing connections.
+    macOS, /dev/tty.* blocks until te DCD signal arrives. So we need /dev/cu.*.
+    """
     if platform.system() == "Darwin" and device.startswith("/dev/tty."):
         cu = device.replace("/dev/tty.", "/dev/cu.", 1)
         if os.path.exists(cu):
             return cu
     return device
 
-def find_serial_port() -> str:
-    """Devuelve la ruta del puerto serie del ESP32 (FTDI VID 0x0403)."""
-    override = os.environ.get("MP32_PORT")
-    if override:
-        log(f"Usando MP32_PORT={override}")
-        return prefer_callout(override)
 
+def find_serial_port() -> str:
+    """
+    Returns the ESP32's port serial route
+    Checks for the needed pyserial lib and the presence of a device, or multiple
+    """
     try:
         from serial.tools import list_ports
     except ImportError:
-        die("Falta pyserial. Instala con: pip install pyserial")
-
+        die("Missing pyserial. Install it with: pip install pyserial")
     all_ports  = list(list_ports.comports())
-    candidates = [p for p in all_ports if p.vid == FTDI_VID]
-
+    candidates = []
+    for port in all_ports:
+        if port.vid == FTDI_VID:
+            candidates.append(port)
     if not candidates:
-        avail = "\n".join(f"  - {p.device} ({p.description})" for p in all_ports) or "  (ninguno)"
+        found_ports = "\n".join(f"  - {port.device} ({port.description})" for port in all_ports) or "  (none)"
         die(
-            "No se encontró ningún dispositivo FTDI (VID 0x0403).\n"
-            f"Puertos serie disponibles:\n{avail}\n"
-            "Conecta el ESP32 por USB o define MP32_PORT=/dev/ttyXXX"
+            "No FTDI device found (VID 0x0403).\n"
+            f"Available serial ports:\n{found_ports}\n"
+            "Connect the ESP32 via USB"
         )
-
     if len(candidates) > 1:
-        log("Varios dispositivos FTDI detectados:")
-        for p in candidates:
-            log(f"  - {p.device} ({p.description})")
-        die("Selecciona uno con MP32_PORT=/dev/ttyXXX")
-
+        log("Multiple FTDI devices detected:")
+        for port in candidates:
+            log(f"  - {port.device} ({port.description})")
+        die("Can only have 1 FTDI device connected at a time")
     port = candidates[0]
-    log(f"Detectado: {port.device} ({port.description})")
-    return prefer_callout(port.device)
+    serial = set_out_conn_path(port.device)
+    log(f"ESP32 DEVICE DETECTED: {serial} ({port.description})")
+    return serial
 
-def find_rfc_server_cmd() -> list[str]:
+
+def find_rfc_server_file() -> list[str]:
     """
-    Localiza esp_rfc2217_server. Intentos en orden:
-      1) Console script en PATH (pip puede o no instalarlo).
-      2) Módulo esptool.rfc2217_server (según versión de esptool).
-      3) Archivo esp_rfc2217_server.py junto a este bridge.py.
+    Localizes the esp_rfc2217_server file, that should be in the same folder as the script.
     """
-    on_path = shutil.which("esp_rfc2217_server")
-    if on_path:
-        return [on_path]
-
-    try:
-        import esptool.rfc2217_server  # noqa: F401
-        return [sys.executable, "-m", "esptool.rfc2217_server"]
-    except ImportError:
-        pass
-
     local = Path(__file__).resolve().parent / "esp_rfc2217_server.py"
     if local.exists():
         return [sys.executable, str(local)]
+    die("esp_rfc2217_server.py was not found next to bridge.py.")
 
-    die(
-        "No se encontró esp_rfc2217_server.\n"
-        "Opciones:\n"
-        "  1) pip install --upgrade esptool\n"
-        "  2) Descarga esp_rfc2217_server.py desde\n"
-        "     https://github.com/espressif/esptool y colócalo junto a bridge.py"
-    )
 
 def ensure_port_free(host: str, port: int) -> None:
-    """Falla rápido si algo ya está escuchando en `port`."""
+    """
+    Fails is the port is free
+    Would be nice to try another port in case of failure
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             s.bind((host, port))
         except OSError:
             die(
-                f"El puerto TCP {port} ya está en uso.\n"
-                "Detén cualquier esp_rfc2217_server previo y reintenta."
+                f"TCP port {port} is already in use.\n"
+                "Stop any previous esp_rfc2217_server and try again."
             )
 
-def wait_for_port(host: str, port: int, timeout: float) -> None:
-    """Espera a que `host:port` acepte conexiones TCP."""
-    deadline = time.monotonic() + timeout
-    last_err: Exception | None = None
-    while time.monotonic() < deadline:
-        try:
-            with socket.create_connection((host, port), timeout=0.5):
-                return
-        except OSError as e:
-            last_err = e
-            time.sleep(CONNECT_POLL_S)
-    die(f"El servidor RFC 2217 no respondió en {timeout:.0f}s ({last_err})")
 
-# --- Orquestador ------------------------------------------------------------
+def wait_for_server(server: subprocess.Popen[str], ready: threading.Event, timeout: float) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if ready.is_set():
+            return
+        if server.poll() is not None:
+            die("RFC 2217 server exited before opening the port")
+        ready.wait(min(CONNECT_POLL_S, deadline - time.monotonic()))
+    die(f"RFC 2217 server did not open the port within {timeout:.0f}s")
+
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 2:
-        print(__doc__, file=sys.stderr)
-        return 2
+    '''
+    1. Detects the ESP32
+    2. Checks if the 2217 port is free
+    3. Localizes the RFC 2217 server file
+    4. Runs the server as a subprocess
+    5. Registers exit signals and cleanup
+    6. Runs the user's command for the server
+    '''
+    def _forward_server_output() -> None:
+        assert server.stdout is not None
+        for line in server.stdout:
+            if f"TCP/IP port: {RFC2217_PORT}" in line:
+                server_ready.set()
 
-    command = argv[1:]
-
-    # ① Detectar el ESP32
-    serial_port = find_serial_port()
-
-    # ② Verificar que el puerto 2217 esté libre
-    ensure_port_free("0.0.0.0", RFC2217_PORT)
-
-    # ③ Localizar el servidor RFC 2217
-    server_cmd  = find_rfc_server_cmd()
-    server_argv = server_cmd + ["-p", str(RFC2217_PORT), serial_port]
-    log(f"Lanzando servidor RFC 2217: {' '.join(server_argv)}")
-
-    # ④ Arrancar el servidor en background
-    server = subprocess.Popen(
-        server_argv,
-        stdout=subprocess.DEVNULL,          # no ensuciar la salida de idf.py
-        stderr=subprocess.STDOUT,
-    )
-
-    # ⑤ Cleanup garantizado
     def _cleanup() -> None:
         if server.poll() is None:
-            log("Deteniendo servidor RFC 2217…")
+            log("Stopping RFC 2217 server...")
             server.terminate()
             try:
                 server.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 server.kill()
 
-    atexit.register(_cleanup)
-
     def _forward(signum, _frame):
         _cleanup()
         sys.exit(128 + signum)
 
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, _forward)
-
-    # ⑥ Esperar a que el servidor esté listo
-    log(f"Esperando a que escuche en 127.0.0.1:{RFC2217_PORT}…")
-    wait_for_port("127.0.0.1", RFC2217_PORT, CONNECT_TIMEOUT_S)
-    log("Servidor listo. Ejecutando comando…")
-
-    # ⑦ Ejecutar el comando del usuario
+    if len(argv) < 2:
+        print(__doc__, file=sys.stderr)
+        return 2
+    command = argv[1:]
+    serial_port = find_serial_port()
+    ensure_port_free("0.0.0.0", RFC2217_PORT)
+    server_cmd  = find_rfc_server_file()
+    server_argv = server_cmd + ["-p", str(RFC2217_PORT), serial_port]
+    log(f"Starting RFC 2217 server: {' '.join(server_argv)}")
+    server_ready = threading.Event()
+    server = subprocess.Popen(
+        server_argv,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    threading.Thread(target=_forward_server_output, daemon=True).start()
+    atexit.register(_cleanup)
+    for sig in (signal.SIGINT, signal.SIGTERM, getattr(signal, "SIGHUP", None)):
+        if sig is not None:
+            signal.signal(sig, _forward)
+    log(f"Waiting for RFC 2217 port {RFC2217_PORT} to open...")
+    wait_for_server(server, server_ready, CONNECT_TIMEOUT_S)
+    log(f"Server ready. Running command: {command}")
     try:
         result = subprocess.run(command)
     except FileNotFoundError:
-        die(f"Comando no encontrado: {command[0]}")
+        die(f"Command not found: {command}")
     finally:
         _cleanup()
         atexit.unregister(_cleanup)
-
     return result.returncode
 
 

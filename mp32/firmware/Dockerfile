@@ -1,5 +1,5 @@
-FROM        espressif/idf:v5.3
+FROM        espressif/idf:latest
+
+RUN python "$IDF_PATH/tools/idf_tools.py" install xtensa-esp-elf
 
 WORKDIR     /project
-
-CMD         ["bash", "-lc", "idf.py build && idf.py flash && idf.py monitor"]

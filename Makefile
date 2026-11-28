@@ -1,49 +1,56 @@
-# ─── Variables ────────────────────────────────────────────────────────────────
-PYTHON_HOST := $(shell command -v python3.12 2>/dev/null \
-                 || command -v python3 2>/dev/null \
-                 || command -v python  2>/dev/null \
-                 || echo python)
+PYTHON_HOST 	:= $(shell command -v python3.12 2>/dev/null \
+					|| command -v python3 2>/dev/null \
+					|| command -v python  2>/dev/null \
+					|| echo python)
 
-VENV        := .venv
-VENV_STAMP  := $(VENV)/.installed
-REQ_FILE    := mp32/firmware/bridge/requirements.txt
+VENV        	:= .venv
+VENV_STAMP  	:= $(VENV)/.installed
+REQ_FILE    	:= mp32/firmware/bridge/requirements.txt
+VENV_PY 		:= $(VENV)/bin/python
 
-ifeq ($(OS),Windows_NT)
-  VENV_PY := $(VENV)/Scripts/python.exe
-else
-  VENV_PY := $(VENV)/bin/python
-endif
+FW_IMAGE      	:= mp32-esp-idf
+FW_CONTAINER  	:= mp32-dev-fw
+FW_DOCKERFILE 	:= mp32/firmware/Dockerfile
+FW_CONTEXT    	:= mp32/firmware
+BRIDGE_PY     	:= mp32/firmware/bridge/bridge.py
 
-FW_IMAGE      := mp32-esp-idf
-FW_DOCKERFILE := mp32/firmware/Dockerfile
-FW_CONTEXT    := mp32/firmware
-BRIDGE_PY     := mp32/firmware/bridge/bridge.py
+ESPPORT_URL   	:= rfc2217://host.docker.internal:2217?ign_set_control
 
-# URL que el contenedor usará para hablar con el RFC 2217 del host
-ESPPORT_URL   := rfc2217://host.docker.internal:2217?ign_set_control
+FW_DOCKER_RUN := docker run --rm -it --name $(FW_CONTAINER) \
+	-v "$$PWD/$(FW_CONTEXT):/project" \
+	-e "ESPPORT=$(ESPPORT_URL)" \
+	--add-host=host.docker.internal:host-gateway \
+	$(FW_IMAGE)
 
-# ─── Phony ────────────────────────────────────────────────────────────────────
-.PHONY: all run dev-fw build-fw-image \
-         runf runfapi runb migrate logs \
-         clean-venv fclean
+$(VENV)/pyvenv.cfg:
+	$(PYTHON_HOST) -m venv $(VENV)
 
-# ─── Default ──────────────────────────────────────────────────────────────────
+$(VENV_STAMP): $(VENV)/pyvenv.cfg $(REQ_FILE)
+	$(VENV_PY) -m pip install --upgrade pip
+	$(VENV_PY) -m pip install -r $(REQ_FILE)
+	touch $(VENV_STAMP)
+
 all: run
 
 run: migrate
 	@echo "Running Frontend and Backend..."
 	docker compose up -d --build
 
-# ─── Firmware: imagen y shell interactivo (existente, intacto) ────────────────
-build-fw-image:
-	@docker build -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
+fw: $(VENV_STAMP)
+	@echo "[Make] Cleaning firmware containers..."
+	@$(MAKE) clean-fw-containers
+	@echo "[Make] Building firmware Docker image..."
+	@$(MAKE) build-fw-image
+	@echo "[Make] Launching bridge, building, flashing, and starting monitor..."
+	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) bash /project/build_fw.sh
 
-dev-fw: $(VENV_STAMP) build-fw-image
-	$(VENV_PY) $(BRIDGE_PY) docker run --rm -it \
-         -v "$$PWD/$(FW_CONTEXT):/project" \
-		-e "ESPPORT=$(ESPPORT_URL)" \
-		--add-host=host.docker.internal:host-gateway \
-         $(FW_IMAGE)
+fw-shell: $(VENV_STAMP)
+	$(MAKE) clean-fw-containers
+	$(MAKE) build-fw-image
+	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) bash
+
+build-fw-image:
+	@docker build --pull -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
 
 runf:
 	@echo "Running frontend..."
@@ -63,24 +70,23 @@ migrate:
 	@echo "Applying database migrations..."
 	docker compose exec -T postgres sh /migrations/migration.sh
 
-# ─── Logs (sin cambios) ───────────────────────────────────────────────────────
 logs:
 	@echo "Frontend, Backend and PostgreSQL logs..."
 	docker compose logs
 
-# ─── Ciclo de vida del venv ───────────────────────────────────────────────────
-$(VENV)/pyvenv.cfg:
-	$(PYTHON_HOST) -m venv $(VENV)
-
-$(VENV_STAMP): $(VENV)/pyvenv.cfg $(REQ_FILE)
-	$(VENV_PY) -m pip install --upgrade pip
-	$(VENV_PY) -m pip install -r $(REQ_FILE)
-	touch $(VENV_STAMP)
-
 clean-venv:
 	rm -rf $(VENV)
 
-# ─── Clean ────────────────────────────────────────────────────────────────────
+clean-fw-containers:
+	@$(PYTHON_HOST) mp32/firmware/clean_fw_containers.py
+	
+clean-idf:
+	@cd /project/bt_spp_acceptor && idf.py fullclean
+
 fclean:
 	@docker compose down -v
 	@rm -rf $(VENV)
+
+.PHONY: all run dev-fw dev-fw-shell clean-fw-containers build-fw-image \
+			runf runfapi runb migrate logs \
+			clean-venv fclean

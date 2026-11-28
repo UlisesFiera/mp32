@@ -90,12 +90,7 @@ def cli(serialport: str, localport: int, verbosity: int, r0: bool):
     srv.listen(1)
     log.print(f"TCP/IP port: {localport}")
 
-    try:
-        host_ip = socket.gethostbyname(socket.gethostname())
-    except OSError:
-        # CI/minimal containers often have no DNS for gethostname(); the server
-        # is still reachable on loopback.
-        host_ip = "127.0.0.1"
+    host_ip = "127.0.0.1"
     wait_msg = (
         "Waiting for connection ... use the 'rfc2217://"
         f"{host_ip}:{localport}?ign_set_control' as a PORT"
