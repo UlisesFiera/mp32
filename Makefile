@@ -16,8 +16,7 @@ BRIDGE_PY     	:= mp32/firmware/bridge/bridge.py
 
 ESPPORT_URL   	:= rfc2217://host.docker.internal:2217?ign_set_control
 
-FW_DOCKER_RUN := docker run --rm -it \
-	--name $(FW_CONTAINER) \
+FW_DOCKER_RUN := docker run --rm -it --name $(FW_CONTAINER) \
 	-v "$$PWD/$(FW_CONTEXT):/project" \
 	-e "ESPPORT=$(ESPPORT_URL)" \
 	--add-host=host.docker.internal:host-gateway \
@@ -39,17 +38,11 @@ run: migrate
 
 fw: $(VENV_STAMP)
 	@echo "[Make] Cleaning firmware containers..."
-	@$(MAKE) --no-print-directory clean-fw-containers
+	@$(MAKE) clean-fw-containers
 	@echo "[Make] Building firmware Docker image..."
-	@$(MAKE) --no-print-directory build-fw-image
+	@$(MAKE) build-fw-image
 	@echo "[Make] Launching bridge, building, flashing, and starting monitor..."
-	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) \
-        bash -lc 'echo "Building firmware..." && idf.py build && \
-        echo "Flashing firmware..." && cd /project/build && \
-        python -m esptool --chip esp32 -p "$(ESPPORT_URL)" -b 460800 \
-        --before default_reset --after hard_reset write_flash @flash_args && \
-        echo "Starting firmware monitor..." && cd /project && \
-        idf.py -p "$(ESPPORT_URL)" monitor'
+	@$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) bash /project/build_fw.sh
 
 fw-shell: $(VENV_STAMP)
 	$(MAKE) clean-fw-containers
@@ -57,7 +50,7 @@ fw-shell: $(VENV_STAMP)
 	$(VENV_PY) $(BRIDGE_PY) $(FW_DOCKER_RUN) bash
 
 build-fw-image:
-	@docker build -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
+	@docker build --pull -t $(FW_IMAGE) -f $(FW_DOCKERFILE) $(FW_CONTEXT)
 
 runf:
 	@echo "Running frontend..."
@@ -87,6 +80,9 @@ clean-venv:
 clean-fw-containers:
 	@$(PYTHON_HOST) mp32/firmware/clean_fw_containers.py
 	
+clean-idf:
+	@cd /project/bt_spp_acceptor && idf.py fullclean
+
 fclean:
 	@docker compose down -v
 	@rm -rf $(VENV)
